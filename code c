@@ -1,0 +1,159 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct {
+    int ngay, thang, nam;
+} Ngay;
+
+typedef struct {
+    char maHang[20];
+    char tenHang[50];
+    Ngay ngayXuat;
+    float giaXuat;
+} HangHoa;
+
+typedef struct Node {
+    HangHoa data;
+    struct Node *left;
+    struct Node *right;
+} Node;
+
+typedef Node* Tree;
+
+void khoiTao(Tree &t) {
+    t = NULL;
+}
+
+Node* taoNut(HangHoa x) {
+    Node *p = (Node*)malloc(sizeof(Node));
+
+    if (p == NULL)
+        return NULL;
+
+    p->data = x;
+    p->left = NULL;
+    p->right = NULL;
+
+    return p;
+}
+
+void chen(Tree &t, HangHoa x) {
+    if (t == NULL) {
+        t = taoNut(x);
+        return;
+    }
+
+    int kq = strcmp(x.maHang, t->data.maHang);
+
+    if (kq < 0)
+        chen(t->left, x);
+    else if (kq > 0)
+        chen(t->right, x);
+    else
+        printf("Ma hang da ton tai!\n");
+}
+
+HangHoa nhapHangHoa() {
+    HangHoa x;
+
+    printf("Nhap ma hang: ");
+    scanf("%19s", x.maHang);
+
+    printf("Nhap ten hang: ");
+    getchar();
+    fgets(x.tenHang, sizeof(x.tenHang), stdin);
+    x.tenHang[strcspn(x.tenHang, "\n")] = '\0';
+
+    printf("Nhap ngay xuat: ");
+    scanf("%d%d%d", &x.ngayXuat.ngay,
+          &x.ngayXuat.thang, &x.ngayXuat.nam);
+
+    printf("Nhap gia xuat: ");
+    scanf("%f", &x.giaXuat);
+
+    return x;
+}
+
+void duyetCay(Tree t) {
+    if (t != NULL) {
+        duyetCay(t->left);
+
+        printf("\nMa hang: %s", t->data.maHang);
+        printf("\nTen hang: %s", t->data.tenHang);
+        printf("\nNgay xuat: %02d/%02d/%04d",
+               t->data.ngayXuat.ngay,
+               t->data.ngayXuat.thang,
+               t->data.ngayXuat.nam);
+        printf("\nGia xuat: %.2f trieu dong\n",
+               t->data.giaXuat);
+
+        duyetCay(t->right);
+    }
+}
+
+Node* timKiem(Tree t, char ma[]) {
+    if (t == NULL)
+        return NULL;
+
+    int kq = strcmp(ma, t->data.maHang);
+
+    if (kq == 0)
+        return t;
+    else if (kq < 0)
+        return timKiem(t->left, ma);
+    else
+        return timKiem(t->right, ma);
+}
+
+void giaiPhong(Tree &t) {
+    if (t != NULL) {
+        giaiPhong(t->left);
+        giaiPhong(t->right);
+        free(t);
+        t = NULL;
+    }
+}
+
+int main() {
+    Tree t;
+    khoiTao(t);
+
+    int n;
+    printf("Nhap so luong hang hoa: ");
+    scanf("%d", &n);
+
+    for (int i = 0; i < n; i++) {
+        printf("\nNhap hang hoa thu %d:\n", i + 1);
+        HangHoa x = nhapHangHoa();
+        chen(t, x);
+    }
+
+    printf("\n===== DANH SACH HANG HOA =====\n");
+    duyetCay(t);
+
+    char ma[20];
+    printf("\nNhap ma hang hoa can tim: ");
+    scanf("%19s", ma);
+
+    Node *p = timKiem(t, ma);
+
+    if (p != NULL) {
+        printf("\n===== THONG TIN HANG HOA =====\n");
+        printf("Ma hang: %s\n", p->data.maHang);
+        printf("Ten hang: %s\n", p->data.tenHang);
+        printf("Ngay xuat: %02d/%02d/%04d\n",
+               p->data.ngayXuat.ngay,
+               p->data.ngayXuat.thang,
+               p->data.ngayXuat.nam);
+        printf("Gia xuat: %.2f trieu dong\n",
+               p->data.giaXuat);
+    } else {
+        printf("Khong co hang hoa trong cay!\n");
+    }
+
+    giaiPhong(t);
+
+    return 0;
+}
